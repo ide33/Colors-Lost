@@ -10,38 +10,32 @@ public class FPSController : MonoBehaviour
     public GameObject cam;  //プレイヤー視点のカメラを設定
     Quaternion cameraRot, characterRot;  //カメラとキャラクターの回転管理の変数
     float Xsensityvity = 2.5f, Ysensityvity = 2.5f;  //マウス感度
-
-    bool cursorLock = true;  //カーソルロック
-
-    //変数の宣言(角度の制限用)
     float minX = -90f, maxX = 90f;  //カメラの垂直回転角度の制限
 
-    // Start is called before the first frame update
     void Start()
     {
         cameraRot = cam.transform.localRotation;
         characterRot = transform.localRotation;
     }
 
-    // Update is called once per frame
     void Update()
     {
         //マウスの移動量を取得、視点移動量を計算
         float xRot = Input.GetAxis("Mouse X") * Ysensityvity;
         float yRot = Input.GetAxis("Mouse Y") * Xsensityvity;
 
+
+        
         //それぞれの回転を反映
         cameraRot *= Quaternion.Euler(-yRot, 0, 0);
         characterRot *= Quaternion.Euler(0, xRot, 0);
 
+        
         //Updateの中で作成した関数を呼ぶ
         cameraRot = ClampRotation(cameraRot);
 
         cam.transform.localRotation = cameraRot;  //カメラの回転を設定
         transform.localRotation = characterRot;  //プレイヤーの回転を設定
-
-
-        UpdateCursorLock();
     }
 
     private void FixedUpdate()
@@ -52,6 +46,7 @@ public class FPSController : MonoBehaviour
         x = Input.GetAxisRaw("Horizontal") * speed;  //水平方向の移動量を設定
         z = Input.GetAxisRaw("Vertical") * speed;  //前後方向の異動量を設定
 
+
         // カメラのforwardベクトルのY成分をゼロにして、正規化することで地面に沿った移動に限定
         Vector3 forward = cam.transform.forward;
         forward.y = 0;
@@ -61,34 +56,11 @@ public class FPSController : MonoBehaviour
         right.y = 0;
         right = right.normalized;
 
+
         // 修正されたforwardとrightを使って移動
         transform.position += forward * z + right * x;
     }
 
-
-    public void UpdateCursorLock()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))  //Escapeキーでロック解除
-        {
-            cursorLock = false;
-        }
-        else if (Input.GetMouseButton(0))  //左クリックでロック
-        {
-            cursorLock = true;
-        }
-
-
-        if (cursorLock)  //trueのときカーソルをロック
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-        }
-        else if (!cursorLock)  //falseのときロック解除
-        {
-            Cursor.lockState = CursorLockMode.None;
-        }
-    }
-
-    //角度制限関数の作成
     public Quaternion ClampRotation(Quaternion q)  //垂直回転の角度を制限
     {
         //q = x,y,z,w (x,y,zはベクトル（量と向き）：wはスカラー（座標とは無関係の量）)
